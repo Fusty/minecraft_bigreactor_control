@@ -223,7 +223,7 @@ TODO:
 local progVer = "0.3.14"
 local progName = "EZ-NUKE"
 local sideClick, xClick, yClick = nil, 0, 0
-local loopTime = 0.1
+local loopTime = 0.4
 local controlRodAdjustAmount = 1 -- Default Reactor Rod Control % adjustment amount
 local flowRateAdjustAmount = 25 -- Default Turbine Flow Rate in mB adjustment amount
 local debugMode = false
@@ -2083,14 +2083,14 @@ local function powerHandler()
 	for reactorIndex = 1, #reactorList do
 		reactor = reactorList[reactorIndex]
 		if reactor.getCoolantType() == nil then
-			if reactor.getEnergyStored() > 9000000 then
+			if reactor.getEnergyStored() > 500000 then
 				reactor.setActive(false)	
 			end
 		end
 	end
 	for turbineIndex = 1, #turbineList do
 		turbine = turbineList[turbineIndex]
-		if turbine.getEnergyStored() > 9000000 then
+		if turbine.getEnergyStored() > 500000 then
 			turbine.setActive(false)
 			for reactorIndex = 1, #reactorList do
 				reactor = reactorList[reactorIndex]

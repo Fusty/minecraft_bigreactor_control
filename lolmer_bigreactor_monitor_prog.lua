@@ -223,7 +223,7 @@ TODO:
 local progVer = "0.3.14"
 local progName = "EZ-NUKE"
 local sideClick, xClick, yClick = nil, 0, 0
-local loopTime = 2
+local loopTime = 0.1
 local controlRodAdjustAmount = 1 -- Default Reactor Rod Control % adjustment amount
 local flowRateAdjustAmount = 25 -- Default Turbine Flow Rate in mB adjustment amount
 local debugMode = false
@@ -2079,6 +2079,32 @@ function main()
 	end -- while not finished do
 end -- main()
 
+local function powerHandler()
+	for reactorIndex = 1, #reactorList do
+		reactor = reactorList[reactorIndex]
+		if reactor.getCoolantType() == nil then
+			if reactor.getEnergyStored() > 9000000 then
+				reactor.setActive(false)	
+			end
+		end
+	end
+	for turbineIndex = 1, #turbineList do
+		turbine = turbineList[turbineIndex]
+		if turbine.getEnergyStored() > 9000000 then
+			turbine.setActive(false)
+			for reactorIndex = 1, #reactorList do
+				reactor = reactorList[reactorIndex]
+				reactor.setActive(false)
+			end
+		else
+			turbine.setActive(true)
+			for reactorIndex = 1, #reactorList do
+				reactor = reactorList[reactorIndex]
+				reactor.setActive(true)
+			end
+		end
+	end
+end
 
 local function eventHandler()
 	while not finished do
@@ -2102,8 +2128,11 @@ local function eventHandler()
 end -- function eventHandler()
 
 
+
 while not finished do
 	parallel.waitForAny(eventHandler, main)
+	parallell.waitForAny(powerHandler, main)
+	
 	sleep(loopTime)
 end -- while not finished do
 

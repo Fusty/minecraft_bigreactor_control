@@ -2130,9 +2130,7 @@ end -- function eventHandler()
 
 
 while not finished do
-	parallel.waitForAny(eventHandler, main)
-	parallell.waitForAny(powerHandler, main)
-	
+	parallel.waitForAny(eventHandler, main, powerHandler)
 	sleep(loopTime)
 end -- while not finished do
 

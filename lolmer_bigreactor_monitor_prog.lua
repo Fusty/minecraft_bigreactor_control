@@ -223,7 +223,7 @@ TODO:
 local progVer = "0.3.14"
 local progName = "EZ-NUKE"
 local sideClick, xClick, yClick = nil, 0, 0
-local loopTime = 0.4
+local loopTime = 1
 local controlRodAdjustAmount = 1 -- Default Reactor Rod Control % adjustment amount
 local flowRateAdjustAmount = 25 -- Default Turbine Flow Rate in mB adjustment amount
 local debugMode = false
@@ -1918,6 +1918,7 @@ local function flowRateControl(turbineIndex)
 				elseif newFlowRate < 25 then
 					newFlowRate = 25 -- Don't go to zero, might as well power off
 				end -- if newFlowRate > 2000 then
+
 				--no sense running an adjustment if it's not necessary
 				if ((newFlowRate < flowRate) or (newFlowRate > flowRate)) then
 					printLog("turbine["..turbineIndex.."] in flowRateControl(turbineIndex="..turbineIndex..") is being commanded to "..newFlowRate.." mB/t flow")
@@ -2090,18 +2091,10 @@ local function powerHandler()
 	end
 	for turbineIndex = 1, #turbineList do
 		turbine = turbineList[turbineIndex]
-		if turbine.getEnergyStored() > 500000 then
+		if getTurbineStoredEnergyBufferPercent(turbine) > 85 then
 			turbine.setActive(false)
-			for reactorIndex = 1, #reactorList do
-				reactor = reactorList[reactorIndex]
-				reactor.setActive(false)
-			end
-		else
+		else if getTurbineStoredEnergyBufferPercent(turbine) < 15 then
 			turbine.setActive(true)
-			for reactorIndex = 1, #reactorList do
-				reactor = reactorList[reactorIndex]
-				reactor.setActive(true)
-			end
 		end
 	end
 end

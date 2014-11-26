@@ -272,23 +272,23 @@ local function termRestore()
 end -- function termRestore()
 
 local function printLog(printStr)
-	if debugMode then
-		-- If multiple monitors, use the last monitor for debugging if debug is enabled
-		if #monitorList > 1 then
-			term.redirect(monitorList[#monitorList]) -- Redirect to last monitor for debugging
-			monitorList[#monitorList].setTextScale(0.5) -- Fit more logs on screen
-			write(printStr.."\n")   -- May need to use term.scroll(x) if we output too much, not sure
-			termRestore()
-		end -- if #monitorList > 1 then
+	-- if debugMode then
+	-- 	-- If multiple monitors, use the last monitor for debugging if debug is enabled
+	-- 	if #monitorList > 1 then
+	-- 		--term.redirect(monitorList[#monitorList]) -- Redirect to last monitor for debugging
+	-- 		monitorList[#monitorList].setTextScale(0.5) -- Fit more logs on screen
+	-- 		write(printStr.."\n")   -- May need to use term.scroll(x) if we output too much, not sure
+	-- 		termRestore()
+	-- 	end -- if #monitorList > 1 then
 
-		local logFile = fs.open("reactorcontrol.log", "a") -- See http://computercraft.info/wiki/Fs.open
-		if logFile then
-			logFile.writeLine(printStr)
-			logFile.close()
-		else
-			error("Cannot open file reactorcontrol.log for appending!")
-		end -- if logFile then
-	end -- if debugMode then
+	-- 	local logFile = fs.open("reactorcontrol.log", "a") -- See http://computercraft.info/wiki/Fs.open
+	-- 	if logFile then
+	-- 		logFile.writeLine(printStr)
+	-- 		logFile.close()
+	-- 	else
+	-- 		error("Cannot open file reactorcontrol.log for appending!")
+	-- 	end -- if logFile then
+	-- end -- if debugMode then
 end -- function printLog(printStr)
 
 -- Trim a string
@@ -570,7 +570,7 @@ local function getDevices(deviceType)
 		if (string.lower(peripheral.getType(peripheralList[peripheralIndex])) == deviceType) then
 			-- Log devices found which match deviceType and which device index we give them
 			printLog("Found "..peripheral.getType(peripheralList[peripheralIndex]).."["..peripheralIndex.."] as index \"["..deviceIndex.."]\" attached as \""..peripheralList[peripheralIndex].."\".")
-			write("Found "..peripheral.getType(peripheralList[peripheralIndex]).."["..peripheralIndex.."] as index \"["..deviceIndex.."]\" attached as \""..peripheralList[peripheralIndex].."\".\n")
+			--write("Found "..peripheral.getType(peripheralList[peripheralIndex]).."["..peripheralIndex.."] as index \"["..deviceIndex.."]\" attached as \""..peripheralList[peripheralIndex].."\".\n")
 			deviceNames[deviceIndex] = peripheralList[peripheralIndex]
 			deviceList[deviceIndex] = peripheral.wrap(peripheralList[peripheralIndex])
 			deviceIndex = deviceIndex + 1
@@ -878,10 +878,11 @@ local function findTurbines()
 				_G[turbineNames[turbineIndex]] = {}
 				_G[turbineNames[turbineIndex]]["TurbineOptions"] = {}
 				_G[turbineNames[turbineIndex]]["TurbineOptions"]["LastSpeed"] = 0
-				_G[turbineNames[turbineIndex]]["TurbineOptions"]["BaseSpeed"] = 2726
+				_G[turbineNames[turbineIndex]]["TurbineOptions"]["BaseSpeed"] = 1840
 				_G[turbineNames[turbineIndex]]["TurbineOptions"]["autoStart"] = true
 				_G[turbineNames[turbineIndex]]["TurbineOptions"]["LastFlow"] = 2000 --open up with all the steam wide open
 				_G[turbineNames[turbineIndex]]["TurbineOptions"]["flowOverride"] = false
+				_G[turbineNames[turbineIndex]]["TurbineOptions"]["idleTime"] = 0
 				_G[turbineNames[turbineIndex]]["TurbineOptions"]["turbineName"] = turbineNames[turbineIndex]
 				printLog("turbineList["..turbineIndex.."] in findTurbines() is a valid Big Reactors Turbine.")
 				if turbine.getConnected() then
@@ -1066,10 +1067,8 @@ local function temperatureControl(reactorIndex)
 			-- Actually, active-cooled reactors should range between 300 and 420C (Mechaet)
 			-- Accordingly I changed the below lines
 			if reactor.isActivelyCooled() then
-				-- below was 0
-				localMinReactorTemp = 300
-				-- below was 300
-				localMaxReactorTemp = 420
+				localMinReactorTemp = 420
+				localMaxReactorTemp = 800
 			else
 				localMinReactorTemp = _G[reactorNames[reactorIndex]]["ReactorOptions"]["reactorMinTemp"]
 				localMaxReactorTemp = _G[reactorNames[reactorIndex]]["ReactorOptions"]["reactorMaxTemp"]
@@ -1636,7 +1635,7 @@ local function displayTurbineBars(turbineIndex, monitorIndex)
 		if newTurbineFlowRate > 2000 then
 			newTurbineFlowRate = 2000
 		elseif newTurbineFlowRate < 0 then
-			newTurbineFlowRate = 25 -- Don't go to zero, might as well power off
+			newTurbineFlowRate = 1 -- Don't go to zero, might as well power off
 		end
 
 		turbine.setFluidFlowRateMax(newTurbineFlowRate)
@@ -1657,7 +1656,7 @@ local function displayTurbineBars(turbineIndex, monitorIndex)
 		if newTurbineFlowRate > 2000 then
 			newTurbineFlowRate = 2000
 		elseif newTurbineFlowRate < 0 then
-			newTurbineFlowRate = 25 -- Don't go to zero, might as well power off
+			newTurbineFlowRate = 1 -- Don't go to zero, might as well power off
 		end
 
 		turbine.setFluidFlowRateMax(newTurbineFlowRate)
@@ -1684,8 +1683,8 @@ local function displayTurbineBars(turbineIndex, monitorIndex)
 		printLog("Increase to Turbine RPM requested by "..progName.." GUI in displayTurbineBars(turbineIndex="..turbineIndex..",monitorIndex="..monitorIndex..").")
 		rpmRateAdjustment = 909
 		newTurbineBaseSpeed = turbineBaseSpeed + rpmRateAdjustment
-		if newTurbineBaseSpeed > 2726 then
-			newTurbineBaseSpeed = 2726
+		if newTurbineBaseSpeed > 1840 then
+			newTurbineBaseSpeed = 1840
 		end
 		sideClick, xClick, yClick = 0, 0, 0
 		_G[turbineNames[turbineIndex]]["TurbineOptions"]["BaseSpeed"] = newTurbineBaseSpeed
@@ -1743,6 +1742,20 @@ local function displayTurbineBars(turbineIndex, monitorIndex)
 
 	print{turbineFlowRateOverrideStatus, width - string.len(turbineFlowRateOverrideStatus) - 1, 10, monitorIndex}
 	monitor.setTextColor(colors.white)
+
+	print{"Coils Engaged:",2,11,monitorIndex}
+
+	if turbine.getInductorEngaged() then
+		turbineInductorStatus = "Engaged"
+		monitor.setTextColor(colors.green)
+	else
+		turbineInductorStatus = "Disengaged"
+		monitor.setTextColor(colors.red)
+	end -- if not reactorRodOverride then
+
+	print{turbineInductorStatus, width - string.len(turbineInductorStatus) - 1, 11, monitorIndex}
+	monitor.setTextColor(colors.white)
+
 
 	monitor.setTextColor(colors.blue)
 	printCentered(_G[turbineNames[turbineIndex]]["TurbineOptions"]["turbineName"],12,monitorIndex)
@@ -1893,7 +1906,7 @@ local function flowRateControl(turbineIndex)
 					--we're above and ascending.
 					if ((rotorSpeed - lastTurbineSpeed) > 100) then
 						--halt
-						newFlowRate = 25
+						newFlowRate = 1
 					else
 						--let's adjust based on proximity
 						flowAdjustment = (rotorSpeed - turbineBaseSpeed)/5
@@ -1915,8 +1928,8 @@ local function flowRateControl(turbineIndex)
 				--boundary check
 				if newFlowRate > 2000 then
 					newFlowRate = 2000
-				elseif newFlowRate < 25 then
-					newFlowRate = 25 -- Don't go to zero, might as well power off
+				elseif newFlowRate < 1 then
+					newFlowRate = 1 -- Don't go to zero, might as well power off
 				end -- if newFlowRate > 2000 then
 
 				--no sense running an adjustment if it's not necessary
@@ -2083,19 +2096,82 @@ end -- main()
 local function powerHandler()
 	for reactorIndex = 1, #reactorList do
 		reactor = reactorList[reactorIndex]
+		--Ignore Actively Cooled Reactors
 		if reactor.getCoolantType() == nil then
-			if reactor.getEnergyStored() > 500000 then
+			if getReactorStoredEnergyBufferPercent(reactor) > 90 then
 				reactor.setActive(false)	
+			elseif getReactorStoredEnergyBufferPercent(reactor) < 40 then
+				reactor.setActive(true)
 			end
 		end
 	end
+
+	-- _G[turbineNames[turbineIndex]]["TurbineOptions"]["idleTime"] = 0
+
 	for turbineIndex = 1, #turbineList do
 		turbine = turbineList[turbineIndex]
-		if getTurbineStoredEnergyBufferPercent(turbine) > 85 then
+
+ww
+		if tonumber(_G[turbineNames[turbineIndex]]["TurbineOptions"]["LastSpeed"]) > 2000 then
+			--We're going WAY to fast, slow it down
 			turbine.setActive(false)
-		else if getTurbineStoredEnergyBufferPercent(turbine) < 15 then
+			turbine.setInductorEngaged(true)
+			sleep(0.1)
+			_G[turbineNames[turbineIndex]]["TurbineOptions"]["LastSpeed"] = turbine.getRotorSpeed()
+		elseif getTurbineStoredEnergyBufferPercent(turbine) < 10 then
+			--We need to kickstart this turbine
+			turbine.setInductorEngaged(true)
 			turbine.setActive(true)
+			turbine.setFluidFlowRateMax(2000)			
+		elseif _G[turbineNames[turbineIndex]]["TurbineOptions"]["idleTime"] > 300 then
+			--Put this turbine to sleep
+			turbine.setActive(false)
+			turbine.setInductorEngaged(false)
+		elseif getTurbineStoredEnergyBufferPercent(turbine) > 90 then
+			--Too much Power, disengage
+			turbine.setInductorEngaged(false)
+			turbine.setFluidFlowRateMax(1)			
+		elseif getTurbineStoredEnergyBufferPercent(turbine) < 40 then
+			--Re-engage
+			turbine.setInductorEngaged(true)
 		end
+
+		--Time how long we've let the coils go idle
+		if turbine.getInductorEngaged() then
+			_G[turbineNames[turbineIndex]]["TurbineOptions"]["idleTime"] = 0
+		else
+			_G[turbineNames[turbineIndex]]["TurbineOptions"]["idleTime"] = _G[turbineNames[turbineIndex]]["TurbineOptions"]["idleTime"] + 1
+		end
+		config.save(turbineNames[turbineIndex]..".options", _G[turbineNames[turbineIndex]])
+
+		-- --Kickstart
+		-- if not turbine.getActive() and getTurbineStoredEnergyBufferPercent(turbine) < 10 then
+		-- 	turbine.setInductorEngaged(true)
+		-- 	turbine.setActive(true)
+		-- end
+
+		-- --Shut down turbine if we've been idle for a bit now
+		-- if _G[turbineNames[turbineIndex]]["TurbineOptions"]["idleTime"] > 300 then
+		-- 	turbine.setActive(false)
+		-- 	turbine.setInductorEngaged(false)
+		-- end
+
+		-- --Disengage the coils if we're full
+		-- if getTurbineStoredEnergyBufferPercent(turbine) > 90 then
+		-- 	--Disengage
+		-- 	turbine.setInductorEngaged(false)
+		-- elseif getTurbineStoredEnergyBufferPercent(turbine) < 40 then
+		-- 	--Re-engage
+		-- 	turbine.setInductorEngaged(true)
+		-- end
+
+
+		--Old method
+		-- if getTurbineStoredEnergyBufferPercent(turbine) > 90 then
+		-- 	turbine.setActive(false)
+		-- elseif getTurbineStoredEnergyBufferPercent(turbine) < 40 then
+		-- 	turbine.setActive(true)
+		-- end
 	end
 end
 

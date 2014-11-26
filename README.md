@@ -80,13 +80,13 @@ Resources
 ----------------------------
 - This script is available from:
 
-	http://pastebin.com/fguScPBQ
+	http://pastebin.com/ViPgMJvW  -- UPDATED FOR Fusty FORK
 
 	https://github.com/sandalle/minecraft_bigreactor_control
 
 - Start-up script is available from:
 
-	http://pastebin.com/ZTMzRLez
+	http://pastebin.com/UkEUjWhG  -- UPDATED FOR Fusty FORK
 
 	https://github.com/sandalle/minecraft_bigreactor_control
 
